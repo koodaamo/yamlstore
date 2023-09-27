@@ -2,10 +2,11 @@ import ruamel.yaml
 from pathlib import Path
 
 class Document:
-    def __init__(self, data, file_path):
-        self.data = data
-        self.file_path = Path(file_path)
-        self.yaml = ruamel.yaml.YAML()
+    def __init__(self, docpath):
+        self.path = docpath
+        self.yaml = ruamel.yaml.YAML(typ='rt')
+        self.yaml.default_flow_style = False
+        self.data = self.yaml.load(self.path)
 
     def sync(self):
         with self.file_path.open("w") as f:
@@ -25,19 +26,19 @@ class Document:
 class DocumentDatabase:
     def __init__(self, directory):
         self.directory = Path(directory)
+        self.name = self.directory.name
         self.documents = {}
-        self.yaml = ruamel.yaml.YAML()
-
         self.load_documents()
 
     def load_documents(self):
-        for file_path in self.directory.glob("*.yaml"):
-            with file_path.open("r") as f:
-                data = self.yaml.load(f)
-                self.documents[file_path.stem] = Document(data, file_path)
+        for docpath in self.directory.glob("*.yaml"):
+            self.documents[docpath.stem] = Document(docpath)
 
     def __getitem__(self, key):
         return self.documents.get(key)
 
     def __iter__(self):
         return iter(self.documents.values())
+
+    def __len__(self):
+        return len(self.documents)

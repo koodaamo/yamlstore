@@ -1,3 +1,31 @@
+[project]
+name = "yamlstore"
+version = "0.2.0"
+authors = [
+    {name = "Petri Savolainen", email = "petri@koodaamo.fi"},
+]
+description = "Python package for storing and retrieving YAML documents"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {"text"= "LGPL-2.1-or-later"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)",
+    "Operating System :: OS Independent"
+]
+
+dependencies = [
+    "ruamel.yaml"
+]
+
+[project.urls]
+Homepage = "https://github.com/koodaamo/yamlstore"
+Repository = "https://github.com/koodaamo/yamlstore"
+
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["yamlstore"]

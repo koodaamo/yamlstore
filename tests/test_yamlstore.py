@@ -15,10 +15,7 @@ def temp_yaml_file():
     os.remove(temp_file.name)
 
 def test_document_creation(temp_yaml_file):
-    with temp_yaml_file.open("r") as f:
-        yaml = ruamel.yaml.YAML()
-        data = yaml.load(f)
-    document = Document(data, temp_yaml_file)
+    document = Document(temp_yaml_file)
     assert document["key1"] == "value1"
 
 
