@@ -1,44 +1,75 @@
 import ruamel.yaml
 from pathlib import Path
+from collections import UserDict
+from typing import Union
+from io import TextIOBase
+from itertools import chain
 
-class Document:
-    def __init__(self, docpath):
-        self.path = docpath
+
+class Document(UserDict):
+    def __init__(self, source:Union[TextIOBase, str]):
+
         self.yaml = ruamel.yaml.YAML(typ='rt')
         self.yaml.default_flow_style = False
-        self.data = self.yaml.load(self.path)
+
+        if isinstance(source, TextIOBase):
+            self.path = Path(source.name)
+            fp = source
+        else:
+            self.path = Path(source)
+            fp = open(source)
+
+        doc_str = fp.read()
+        fp.close()
+
+        self.data = self.yaml.load(doc_str)
+        self.name = self.path.name[:-5]
+        line = doc_str.split("\n", maxsplit=1)[0].strip()
+        self.description = line.lstrip("# ") if line.startswith("#") else ""
 
     def sync(self):
-        with self.file_path.open("w") as f:
+        with self.path.open("w") as f:
             self.yaml.dump(self.data, f)
-
-    def __getitem__(self, key):
-        return self.data.get(key)
 
     def __setitem__(self, key, value):
         self.data[key] = value
         self.sync()
 
-    def __iter__(self):
-        return iter(self.data)
+
+class Configuration(Document):
+    "read only document"
+
+    def __setitem__(self, key, value):
+        raise NotImplementedError("Config is read-only")
 
 
-class DocumentDatabase:
-    def __init__(self, directory):
-        self.directory = Path(directory)
-        self.name = self.directory.name
-        self.documents = {}
-        self.load_documents()
+class DocumentDatabase(UserDict):
+    def __init__(self, directory:str=None):
+        super().__init__()
+        if directory:
+            self.directory = Path(directory)
+            self.name = self.directory.name
+            self.load_documents()
+        else:
+            self.directory = None
+            self.name = None
 
-    def load_documents(self):
-        for docpath in self.directory.glob("*.yaml"):
-            self.documents[docpath.stem] = Document(docpath)
+    def load_documents(self, path:str=None):
+        directory = path or self.directory
+        for doc_path in Path(directory).glob("*.yaml"):
+            self.data[doc_path.stem] = Document(doc_path)
 
-    def __getitem__(self, key):
-        return self.documents.get(key)
 
-    def __iter__(self):
-        return iter(self.documents.values())
+class ConfigurationDatabase(DocumentDatabase):
+    "configuration database with added root config"
 
-    def __len__(self):
-        return len(self.documents)
+    def __init__(self, source:Union[TextIOBase, str]=None):
+
+        if isinstance(source, TextIOBase):
+            self.data = dict(Configuration(source))
+        else:
+            super().__init__(source)
+
+    def __iadd__(self, filename):
+        "add a new configuration document to the database root"
+        self._root = Configuration(Path(filename))
