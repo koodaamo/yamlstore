@@ -40,10 +40,13 @@ class Configuration(Document):
     "read only document"
 
     def __setitem__(self, key, value):
-        raise NotImplementedError("Config is read-only")
+        raise PermissionError("Config is read-only")
 
 
 class DocumentDatabase(UserDict):
+
+    ITEM = Document
+
     def __init__(self, directory:str=None):
         super().__init__()
         if directory:
@@ -57,19 +60,21 @@ class DocumentDatabase(UserDict):
     def load_documents(self, path:str=None):
         directory = path or self.directory
         for doc_path in Path(directory).glob("*.yaml"):
-            self.data[doc_path.stem] = Document(doc_path)
+            self.data[doc_path.stem] = self.ITEM(doc_path)
 
 
 class ConfigurationDatabase(DocumentDatabase):
     "configuration database with added root config"
 
+    ITEM = Configuration
+
     def __init__(self, source:Union[TextIOBase, str]=None):
 
         if isinstance(source, TextIOBase):
-            self.data = dict(Configuration(source))
+            self.data = dict(self.ITEM(source))
         else:
             super().__init__(source)
 
     def __iadd__(self, filename):
         "add a new configuration document to the database root"
-        self._root = Configuration(Path(filename))
+        self._root = self.ITEM(Path(filename))
