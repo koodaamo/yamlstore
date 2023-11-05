@@ -2,17 +2,17 @@ import ruamel.yaml
 from pathlib import Path
 from collections import UserDict
 from typing import Union
-from io import TextIOBase
+from io import TextIOWrapper
 from itertools import chain
 
 
 class Document(UserDict):
-    def __init__(self, source:Union[TextIOBase, str]):
+    def __init__(self, source:Union[TextIOWrapper, str]):
 
         self.yaml = ruamel.yaml.YAML(typ='rt')
         self.yaml.default_flow_style = False
 
-        if isinstance(source, TextIOBase):
+        if isinstance(source, TextIOWrapper):
             self.path = Path(source.name)
             fp = source
         else:
@@ -35,6 +35,12 @@ class Document(UserDict):
         self.data[key] = value
         self.sync()
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self) -> str:
+        return str(self)
+
 
 class Configuration(Document):
     "read only document"
@@ -47,30 +53,39 @@ class DocumentDatabase(UserDict):
 
     ITEM = Document
 
-    def __init__(self, directory:str=None):
+    def __init__(self, directory:str|None=None):
         super().__init__()
+        self.directory = None
+        self.name = None
+
+        # TODO some use cases require multiple directories
+
         if directory:
             self.directory = Path(directory)
             self.name = self.directory.name
             self.load_documents()
-        else:
-            self.directory = None
-            self.name = None
 
-    def load_documents(self, path:str=None):
+    def load_documents(self, path:Path|str|None=None):
         directory = path or self.directory
+        if not directory:
+            raise ValueError("No directory specified")
         for doc_path in Path(directory).glob("*.yaml"):
-            self.data[doc_path.stem] = self.ITEM(doc_path)
+            self.data[doc_path.stem] = self.ITEM(doc_path.absolute().as_posix())
 
+    def __str__(self) -> str:
+        return f"{self.name} ({len(self.data)})"
+
+    def __repr__(self) -> str:
+        return str(self)
 
 class ConfigurationDatabase(DocumentDatabase):
     "configuration database with added root config"
 
     ITEM = Configuration
 
-    def __init__(self, source:Union[TextIOBase, str]=None):
+    def __init__(self, source:Union[TextIOWrapper, str, None]=None):
 
-        if isinstance(source, TextIOBase):
+        if isinstance(source, TextIOWrapper):
             self.data = dict(self.ITEM(source))
         else:
             super().__init__(source)
