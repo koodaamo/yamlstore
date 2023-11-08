@@ -1,6 +1,6 @@
 [project]
 name = "yamlstore"
-version = "0.2.1"
+version = "0.3.0"
 authors = [
     {name = "Petri Savolainen", email = "petri@koodaamo.fi"},
 ]
@@ -27,5 +27,7 @@ Repository = "https://github.com/koodaamo/yamlstore"
 requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-py-modules = ["yamlstore"]
+
+[tool.setuptools.package-data]
+yamlstore = ["py.typed"]
+
