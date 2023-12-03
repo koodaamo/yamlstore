@@ -34,6 +34,11 @@ def test_document_creation(temp_yaml_file):
     document = Document(temp_yaml_file)
     assert document["key1"] == "value1"
 
+def test_document_content():
+    document = Document(b"this is the content", title="test", description="this is a test")
+    assert document["title"] == "test"
+    assert document["description"] == "this is a test"
+    assert document["body"] == b"this is the content"
 
 def test_document_db_creation(temp_yaml_file):
     db = DocumentDatabase(temp_yaml_file.parent)
