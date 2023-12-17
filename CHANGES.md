@@ -1,5 +1,10 @@
 # Changes
 
+0.5.0
+-----
+
+- DocumentDatabase modification tracking
+
 0.4.0
 -----
 
