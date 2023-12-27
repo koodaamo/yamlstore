@@ -1,3 +1,2 @@
-from .documents import Document, DocumentDatabase
-from .configs import Configuration, ConfigurationDatabase
+from .documents import Document, Collection
 

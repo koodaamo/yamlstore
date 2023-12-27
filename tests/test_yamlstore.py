@@ -3,8 +3,8 @@ import tempfile
 import pytest
 import ruamel.yaml
 from pathlib import Path
-from yamlstore import Document, DocumentDatabase
-from yamlstore import Configuration, ConfigurationDatabase
+from yamlstore import Document, Collection
+
 
 @pytest.fixture
 def temp_yaml_file():
@@ -41,70 +41,40 @@ def test_document_content():
     assert document["body"] == b"this is the content"
 
 def test_document_db_creation(temp_yaml_file):
-    db = DocumentDatabase(temp_yaml_file.parent)
+    db = Collection(temp_yaml_file.parent)
     document = db[temp_yaml_file.stem]
     assert document["key1"] == "value1"
 
 def test_document_db_iteration(temp_yaml_file):
-    db = DocumentDatabase(temp_yaml_file.parent)
+    db = Collection(temp_yaml_file.parent)
     docs = list(db)
     assert len(docs) == 1
 
 def test_document_db_document_iteration(temp_yaml_file):
-    db = DocumentDatabase(temp_yaml_file.parent)
+    db = Collection(temp_yaml_file.parent)
     document = db[temp_yaml_file.stem]
     keys = list(document)
     assert "key1" in keys
     assert "key2" in keys
 
 
-def test_configuration_creation(temp_yaml_file):
+def test_document_readonly(temp_yaml_file):
     """
-    Test that a Configuration object can be created from a YAML file and that it contains the expected data.
+    Test that a Configuration object cannot be written to disk.
     """
-    config_db = ConfigurationDatabase(temp_yaml_file.parent)
-    config = config_db[temp_yaml_file.stem]
-    assert config["key1"] == "value1"
-
-
-def test_configuration_db_configuration_iteration(temp_yaml_file):
-    """
-    Test that a Configuration object can be iterated over and that it returns the expected keys.
-    """
-    config_db = ConfigurationDatabase(temp_yaml_file.parent)
-    config = config_db[temp_yaml_file.stem]
-    keys = list(config)
-    assert "key1" in keys
-    assert "key2" in keys
-
-
-def test_configuration_readonly(temp_yaml_file):
-    """
-    Test that a Configuration object cannot be written to if it was created from a read-only file.
-    """
-    # Create a read-only file
-    temp_yaml_file.chmod(0o444)
 
     # Try to modify the configuration
-    config_db = ConfigurationDatabase(temp_yaml_file.parent)
-    config = config_db[temp_yaml_file.stem]
-    with pytest.raises(PermissionError):
-        config["key3"] = "value3"
+    collection = Collection(temp_yaml_file.parent, autosync=True, readonly=True)
+    doc = collection[temp_yaml_file.stem]
+    with pytest.raises(Exception):
+        doc["key3"] = "value3"
 
-def test_configuration_db_iteration(temp_yaml_files):
-    """
-    Test that the ConfigurationDatabase object can be iterated over and that it returns the expected number of configurations.
-    """
-    db = ConfigurationDatabase()
-    db.load_documents(temp_yaml_files)
-    configs = list(db)
-    assert len(configs) == 2
 
-def test_configuration_db_length(temp_yaml_files):
+def test_collection_length(temp_yaml_files):
     """
     Test that the ConfigurationDatabase object returns the expected number of configurations.
     """
-    db = ConfigurationDatabase()
+    db = Collection()
     db.load_documents(temp_yaml_files)
     assert len(db) == 2
 

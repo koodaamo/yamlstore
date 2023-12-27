@@ -1,5 +1,11 @@
 # Changes
 
+0.6.0
+-----
+
+- Drop separate config type; support readonly docs instead
+- Rename documentdatabases to collections
+
 0.5.0
 -----
 

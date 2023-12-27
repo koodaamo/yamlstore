@@ -8,19 +8,18 @@ from io import TextIOWrapper
 
 class Document(UserDict):
 
-    def __init__(self, source:Optional[Path|bytes]=None, title:Optional[str]="", description:Optional[str]="", autosync:bool=False):
+    def __init__(self, source:Optional[Path|bytes]=None, title:Optional[str]="", description:Optional[str]="", autosync:bool=False, readonly:bool=False):
         super().__init__()
         self._yaml = ruamel.yaml.YAML(typ='rt')
         self._yaml.default_flow_style = False
         self._modified = False
+        self._readonly = readonly
 
-        # initiate from path, file, string representing a path,
-        # or a tuple with content directly
-
+        # We are overriding __setitem__ to support readonly documents, so need to circumvent that
         if title:
-            self.data["title"] = title
+             super().__setitem__("title", title)
         if description:
-            self.data["description"] = description
+            super().__setitem__("description", description)
 
         self._autosync = autosync
         self._path:Optional[Path] = None
@@ -32,9 +31,9 @@ class Document(UserDict):
                     with open(source, "r") as fp:
                         content = fp.read()
                     self.data = self._yaml.load(content)
-                    self["title"] = self._path.name[:-5]
+                    super().__setitem__("title", self._path.name[:-5])
                     firstline = content.split("\n", maxsplit=1)[0].strip()
-                    self["description"] = firstline.lstrip("# ") if firstline.startswith("#") else ""
+                    super().__setitem__("description", firstline.lstrip("# ") if firstline.startswith("#") else "")
             case bytes():
                 self._path = None
                 self["body"] = source
@@ -49,6 +48,8 @@ class Document(UserDict):
                 self._yaml.dump(self.data, f)
 
     def __setitem__(self, key, value):
+        if self._readonly:
+            raise Exception("Document is read-only")        
         self.data[key] = value
         self._modified = True
         if self._autosync:
@@ -61,15 +62,14 @@ class Document(UserDict):
         return str(self)
 
 
-class DocumentDatabase(UserDict):
+class Collection(UserDict):
 
-    ITEM = Document
-
-    def __init__(self, directory:Optional[Path]=None, name:Optional[str]=None, autosync:bool=False):
+    def __init__(self, directory:Optional[Path]=None, name:Optional[str]=None, autosync:bool=False, readonly:bool=False):
         super().__init__()
         self.directory = directory
         self.name = name
         self._autosync = autosync
+        self._readonly = readonly
         self._modified = False
 
         # TODO some use cases require multiple directories
@@ -97,10 +97,12 @@ class DocumentDatabase(UserDict):
         if not directory:
             raise ValueError("No directory specified")
         for doc_path in Path(directory).glob("*.yaml"):
-            self.data[doc_path.stem] = self.ITEM(Path(doc_path.absolute().as_posix()))
+            self.data[doc_path.stem] = Document(Path(doc_path.absolute().as_posix()), readonly=self._readonly)
         self._modified = True
 
     def sync(self):
+        if self._readonly:
+            raise Exception("Collection is read-only")
         for doc in self.data.values():
             doc.sync()
 
