@@ -46,6 +46,8 @@ class Document(UserDict):
         if self._path:
             with self._path.open("w") as f:
                 self._yaml.dump(self.data, f)
+        else:
+            raise Exception("Sync attempted on document without path")
 
     def __setitem__(self, key, value):
         if self._readonly:
@@ -56,18 +58,19 @@ class Document(UserDict):
             self.sync()
 
     def __str__(self):
-        return self.get("title") or self.get("description") or str(self._path)
+        return self.get("title") or self.get("description") or (str(self._path) if self._path else '')
 
     def __repr__(self) -> str:
-        return str(self)
+        return f"<document '{str(self)}'>"
 
 
 class Collection(UserDict):
 
-    def __init__(self, directory:Optional[Path]=None, name:Optional[str]=None, autosync:bool=False, readonly:bool=False):
+    def __init__(self, directory:Optional[Path]=None, name:Optional[str]=None, autoload=True, autosync:bool=False, readonly:bool=False):
         super().__init__()
         self.directory = directory
         self.name = name
+        self._autoload = autoload
         self._autosync = autosync
         self._readonly = readonly
         self._modified = False
@@ -75,13 +78,13 @@ class Collection(UserDict):
         # TODO some use cases require multiple directories
 
         if directory:
-
             if directory.is_dir():
-                self.load_documents(directory)
+                if self._autoload:
+                    self.load_documents(directory)
             elif not directory.exists():
                 directory.mkdir()
             else:
-                raise ValueError(f"Invalid directory: {directory}")
+                raise ValueError(f"Invalid collection path: {directory}")
             self.name = directory.name
 
         elif name:
@@ -120,4 +123,4 @@ class Collection(UserDict):
         return f"{self.name} ({len(self.data)})"
 
     def __repr__(self) -> str:
-        return str(self)
+        return f"<collection '{self.name}'>"

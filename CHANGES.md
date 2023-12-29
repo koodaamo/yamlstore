@@ -1,5 +1,11 @@
 # Changes
 
+0.7.0
+-----
+
+- make collection document autoload optional
+- raise exception on sync without path
+
 0.6.0
 -----
 
