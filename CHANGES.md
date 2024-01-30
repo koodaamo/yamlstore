@@ -1,5 +1,10 @@
 # Changes
 
+0.7.1
+-----
+
+- sanitize doc file name before attempting to create the file
+
 0.7.0
 -----
 

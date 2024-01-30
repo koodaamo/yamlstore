@@ -1,22 +1,25 @@
 [project]
 name = "yamlstore"
-version = "0.7.0"
+version = "0.7.1"
 authors = [
     {name = "Petri Savolainen", email = "petri@koodaamo.fi"},
 ]
 description = "Python package for storing and retrieving YAML documents"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 license = {"text"= "LGPL-2.1-or-later"}
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)",
     "Operating System :: OS Independent"
 ]
 
 dependencies = [
-    "ruamel.yaml"
+    "ruamel.yaml",
+    "pathvalidate"
 ]
 
 [project.urls]

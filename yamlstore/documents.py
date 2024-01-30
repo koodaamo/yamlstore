@@ -4,6 +4,7 @@ from os import PathLike
 from collections import UserDict
 from typing import Union, Optional
 from io import TextIOWrapper
+from pathvalidate import sanitize_filename
 
 
 class Document(UserDict):
@@ -114,7 +115,8 @@ class Collection(UserDict):
         self._modified = True
         if self._autosync or doc._autosync:
             if not doc._path:
-                doc._path = self.directory / f"{doc['title']}.yaml"
+                doc_fn = sanitize_filename(doc["title"])
+                doc._path = self.directory / f"{doc_fn}.yaml"
             doc.sync()
 
         return self
