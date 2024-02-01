@@ -1,5 +1,10 @@
 # Changes
 
+0.7.2
+-----
+
+- when doc is initialized from path, only try to infer title and description when they are not set already
+
 0.7.1
 -----
 
