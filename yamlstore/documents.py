@@ -32,9 +32,12 @@ class Document(UserDict):
                     with open(source, "r") as fp:
                         content = fp.read()
                     self.data = self._yaml.load(content)
-                    super().__setitem__("title", self._path.name[:-5])
-                    firstline = content.split("\n", maxsplit=1)[0].strip()
-                    super().__setitem__("description", firstline.lstrip("# ") if firstline.startswith("#") else "")
+                    # If title or description are not set, try to infer them from the file
+                    if not self.get("title"):
+                        super().__setitem__("title", self._path.name[:-5])
+                    if not self.get("description"):
+                        firstline = content.split("\n", maxsplit=1)[0].strip()
+                        super().__setitem__("description", firstline.lstrip("# ") if firstline.startswith("#") else "")
             case bytes():
                 self._path = None
                 self["body"] = source
