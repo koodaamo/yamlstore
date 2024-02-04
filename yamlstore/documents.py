@@ -31,7 +31,7 @@ class Document(UserDict):
                 if source.exists():
                     with open(source, "r") as fp:
                         content = fp.read()
-                    self.data = self._yaml.load(content)
+                    self.data = self._yaml.load(content) or {}
                     # If title or description are not set, try to infer them from the file
                     if not self.get("title"):
                         super().__setitem__("title", self._path.name[:-5])

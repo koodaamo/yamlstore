@@ -1,6 +1,6 @@
 [project]
 name = "yamlstore"
-version = "0.7.2"
+version = "0.7.3"
 authors = [
     {name = "Petri Savolainen", email = "petri@koodaamo.fi"},
 ]

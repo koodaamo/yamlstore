@@ -1,5 +1,10 @@
 # Changes
 
+0.7.3
+-----
+
+ - recover from case if YAML file is empty for whatever bad reason
+
 0.7.2
 -----
 
