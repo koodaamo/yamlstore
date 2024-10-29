@@ -1,7 +1,7 @@
 import os
 import tempfile
 import pytest
-import ruamel.yaml
+import fastyaml
 from pathlib import Path
 from yamlstore import Document, Collection
 
@@ -9,9 +9,9 @@ from yamlstore import Document, Collection
 @pytest.fixture
 def temp_yaml_file():
     data = {"key1": "value1", "key2": "value2"}
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml") as temp_file:
-        yaml = ruamel.yaml.YAML()
-        yaml.dump(data, temp_file)
+    with tempfile.NamedTemporaryFile(mode="wt", suffix=".yaml") as temp_file:
+        fastyaml.dump(data, temp_file)
+        temp_file.flush() # fastyaml does not flush; this would fail in the test without
         yield Path(temp_file.name)
 
 @pytest.fixture
@@ -21,12 +21,10 @@ def temp_yaml_files():
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_file1 = Path(temp_dir) / "file1.yaml"
         with open(temp_file1, "w") as f:
-            yaml = ruamel.yaml.YAML()
-            yaml.dump(data1, f)
+            fastyaml.dump(data1, f)
         temp_file2 = Path(temp_dir) / "file2.yaml"
         with open(temp_file2, "w") as f:
-            yaml = ruamel.yaml.YAML()
-            yaml.dump(data2, f)
+            fastyaml.dump(data2, f)
         yield temp_dir
 
 

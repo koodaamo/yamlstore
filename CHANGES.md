@@ -1,5 +1,10 @@
 # Changes
 
+0.8.0
+-----
+
+ - switch to fastyaml for performance gains
+
 0.7.3
 -----
 

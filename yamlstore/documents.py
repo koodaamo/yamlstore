@@ -1,9 +1,7 @@
-import ruamel.yaml # type: ignore 
+import fastyaml
 from pathlib import Path
-from os import PathLike
 from collections import UserDict
-from typing import Union, Optional
-from io import TextIOWrapper
+from typing import Optional
 from pathvalidate import sanitize_filename
 
 
@@ -11,8 +9,6 @@ class Document(UserDict):
 
     def __init__(self, source:Optional[Path|bytes]=None, title:Optional[str]="", description:Optional[str]="", autosync:bool=False, readonly:bool=False):
         super().__init__()
-        self._yaml = ruamel.yaml.YAML(typ='rt')
-        self._yaml.default_flow_style = False
         self._modified = False
         self._readonly = readonly
 
@@ -31,7 +27,7 @@ class Document(UserDict):
                 if source.exists():
                     with open(source, "r") as fp:
                         content = fp.read()
-                    self.data = self._yaml.load(content) or {}
+                        self.data = fastyaml.loads(content) if content else {}
                     # If title or description are not set, try to infer them from the file
                     if not self.get("title"):
                         super().__setitem__("title", self._path.name[:-5])
