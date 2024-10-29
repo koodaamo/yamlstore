@@ -1,5 +1,10 @@
 # Changes
 
+0.8.1
+-----
+
+- fix a leftover oversight from 0.8.0
+
 0.8.0
 -----
 

@@ -45,7 +45,7 @@ class Document(UserDict):
     def sync(self):
         if self._path:
             with self._path.open("w") as f:
-                self._yaml.dump(self.data, f)
+                fastyaml.dump(self.data, f)
         else:
             raise Exception("Sync attempted on document without path")
 
